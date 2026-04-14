@@ -83,3 +83,4 @@ If you extend the API integrations, add secrets via the Cloudflare Pages dashboa
 - **lucide-react** icons
 - **React Context API** for global privacy state
 "# project-panel" 
+"# project-panel" 
