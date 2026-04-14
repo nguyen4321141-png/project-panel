@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-nx-bg font-sans text-nx-text antialiased;
+    min-height: 100vh;
+    /* Subtle noise texture overlay */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-nx-muted rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-nx-sub; }
+
+  ::selection {
+    background: rgba(56, 189, 248, 0.2);
+    color: #e2e8f0;
+  }
+}
+
+@layer components {
+  .nx-card {
+    @apply bg-nx-surface border border-nx-border rounded-lg;
+  }
+
+  .nx-badge {
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono font-medium;
+  }
+
+  .nx-btn {
+    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium
+           transition-all duration-150 cursor-pointer select-none;
+  }
+
+  .nx-btn-ghost {
+    @apply nx-btn text-nx-sub hover:text-nx-text hover:bg-nx-raised;
+  }
+
+  .nx-btn-accent {
+    @apply nx-btn bg-nx-sky text-nx-bg hover:bg-sky-300;
+  }
+
+  .status-dot {
+    @apply w-1.5 h-1.5 rounded-full;
+  }
+
+  .privacy-transition {
+    @apply transition-all duration-200 ease-in-out;
+  }
+}
+
+/* React Player wrapper */
+.react-player-wrapper {
+  position: relative;
+  padding-top: 56.25%;
+}
+
+.react-player-wrapper > div {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Code block syntax-like coloring */
+.doc-keyword  { color: #a78bfa; }
+.doc-type     { color: #38bdf8; }
+.doc-string   { color: #34d399; }
+.doc-comment  { color: #3d4f6e; font-style: italic; }
+.doc-number   { color: #fbbf24; }

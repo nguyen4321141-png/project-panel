@@ -1,0 +1,13 @@
+# Cloudflare Pages — static site deployment
+#
+# Git integration (recommended): set build command = "npm run build",
+# output dir = "dist" in the Cloudflare Pages dashboard. No deploy command needed.
+#
+# Manual CLI deploy:
+#   npx wrangler pages deploy dist --project-name nexus-portal
+
+name = "nexus-portal"
+compatibility_date = "2024-09-01"
+
+[assets]
+directory = "./dist"
