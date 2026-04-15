@@ -30,7 +30,7 @@ export default function StatusFooter({ onToggleOverlay, overlayActive }) {
           onClick={onToggleOverlay}
           disabled={!isPrivate}
           title={isPrivate ? 'Toggle full-screen lock' : 'Enable privacy mode first'}
-          className={`flex items-center gap-1 text-[10px] font-mono transition-colors
+          className={`flex items-center gap-1 text-[10px] font-mono transition-colors nx-btn-anim rounded px-1.5 py-0.5
             ${isPrivate
               ? 'text-nx-sub hover:text-nx-sky cursor-pointer'
               : 'text-nx-border cursor-not-allowed'

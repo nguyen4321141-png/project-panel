@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings2, Code2, Video, ShieldCheck, ShieldOff, Eye, EyeOff } from 'lucide-react';
+import { Settings2, Code2, Video, ShieldCheck, ShieldOff, Eye, EyeOff, Globe } from 'lucide-react';
 import { usePrivacy } from '../context/PrivacyContext.jsx';
 import ContentSwitcher from './ContentSwitcher.jsx';
 import DocBlock        from './DocBlock.jsx';
@@ -15,7 +15,7 @@ import ConfigDrawer    from './ConfigDrawer.jsx';
  * The ⚙ config button is intentionally low-profile (icon-only, ghost style).
  */
 export default function MediaWidget() {
-  const { isPrivate, togglePrivacy } = usePrivacy();
+  const { isPrivate, togglePrivacy, contentMode, setContentMode } = usePrivacy();
   const [drawerOpen, setDrawerOpen]  = useState(false);
 
   return (
@@ -46,7 +46,7 @@ export default function MediaWidget() {
             <button
               onClick={togglePrivacy}
               title={isPrivate ? 'Show media (Alt+X)' : 'Enable privacy (Alt+X)'}
-              className={`nx-btn-ghost p-1.5 transition-colors ${
+              className={`nx-btn-ghost nx-btn-anim p-1.5 transition-colors ${
                 isPrivate ? 'text-nx-sky' : 'text-nx-sub'
               }`}
             >
@@ -60,7 +60,7 @@ export default function MediaWidget() {
             <button
               onClick={() => setDrawerOpen(true)}
               title="Configure stream source"
-              className="nx-btn-ghost p-1.5 text-nx-border hover:text-nx-sub"
+              className="nx-btn-ghost nx-btn-anim p-1.5 text-nx-border hover:text-nx-sub"
             >
               <Settings2 size={12} strokeWidth={2} />
             </button>
@@ -76,7 +76,7 @@ export default function MediaWidget() {
             </span>
             <button
               onClick={togglePrivacy}
-              className="ml-auto flex items-center gap-1 text-[10px] font-mono text-nx-sub hover:text-nx-text transition-colors"
+              className="ml-auto flex items-center gap-1 text-[10px] font-mono text-nx-sub hover:text-nx-text transition-colors nx-btn-anim rounded px-1.5 py-0.5"
             >
               <ShieldOff size={9} strokeWidth={2} />
               Restore
@@ -84,29 +84,53 @@ export default function MediaWidget() {
           </div>
         )}
 
+        {!isPrivate && (
+          <div className="px-4 py-2 border-b border-nx-border/60 flex items-center gap-2">
+            <button
+              onClick={() => setContentMode('media')}
+              className={`nx-btn nx-btn-anim text-[11px] py-1 px-2 ${
+                contentMode === 'media'
+                  ? 'bg-nx-sky/15 text-nx-sky border border-nx-sky/30'
+                  : 'text-nx-sub border border-nx-border hover:text-nx-text'
+              }`}
+            >
+              <Video size={11} strokeWidth={2} />
+              Media
+            </button>
+            <button
+              onClick={() => setContentMode('browser')}
+              className={`nx-btn nx-btn-anim text-[11px] py-1 px-2 ${
+                contentMode === 'browser'
+                  ? 'bg-nx-sky/15 text-nx-sky border border-nx-sky/30'
+                  : 'text-nx-sub border border-nx-border hover:text-nx-text'
+              }`}
+            >
+              <Globe size={11} strokeWidth={2} />
+              Browser
+            </button>
+          </div>
+        )}
+
         {/* ── Content area ────────────────────────────────────── */}
         <div className="privacy-transition">
-          {isPrivate ? (
-            /* DocBlock: realistic API reference */
-            <div className="px-4 py-3 animate-fade-in">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="flex gap-1">
-                  {['bg-nx-red','bg-nx-amber','bg-nx-green'].map(c => (
-                    <span key={c} className={`w-2 h-2 rounded-full ${c} opacity-70`} />
-                  ))}
-                </div>
-                <span className="text-[10px] font-mono text-nx-sub">
-                  nexus-sdk / cache / CacheClient.ts
-                </span>
+          <div className={isPrivate ? 'hidden' : 'animate-fade-in'}>
+            <ContentSwitcher />
+          </div>
+
+          {/* DocBlock: realistic API reference */}
+          <div className={isPrivate ? 'px-4 py-3 animate-fade-in' : 'hidden'} aria-hidden={!isPrivate}>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="flex gap-1">
+                {['bg-nx-red','bg-nx-amber','bg-nx-green'].map(c => (
+                  <span key={c} className={`w-2 h-2 rounded-full ${c} opacity-70`} />
+                ))}
               </div>
-              <DocBlock />
+              <span className="text-[10px] font-mono text-nx-sub">
+                nexus-sdk / cache / CacheClient.ts
+              </span>
             </div>
-          ) : (
-            /* ContentSwitcher: react-player wrapper */
-            <div className="animate-fade-in">
-              <ContentSwitcher />
-            </div>
-          )}
+            <DocBlock />
+          </div>
         </div>
 
         {/* ── Footer hint ─────────────────────────────────────── */}

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   LayoutDashboard, FileText, Activity, ChevronDown,
-  Bell, Search, Shield, ShieldOff, Menu, X,
+  Bell, Search, Shield, ShieldOff, Menu, X, Palette,
 } from 'lucide-react';
 import { usePrivacy } from '../context/PrivacyContext.jsx';
 
@@ -12,7 +12,7 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
-  const { isPrivate, togglePrivacy } = usePrivacy();
+  const { isPrivate, togglePrivacy, theme, setTheme } = usePrivacy();
   const [mobileOpen, setMobileOpen]  = useState(false);
   const [notifBadge] = useState(3);
 
@@ -39,7 +39,7 @@ export default function Navbar() {
           {NAV_LINKS.map(({ label, icon: Icon, active }) => (
             <button
               key={label}
-              className={`nx-btn-ghost text-[13px] rounded-md ${
+              className={`nx-btn-ghost nx-btn-anim text-[13px] rounded-md ${
                 active ? 'text-nx-text bg-nx-raised' : ''
               }`}
             >
@@ -49,7 +49,7 @@ export default function Navbar() {
           ))}
 
           {/* Workspace selector */}
-          <button className="ml-4 flex items-center gap-1.5 text-nx-sub hover:text-nx-text text-[13px] font-medium transition-colors">
+          <button className="ml-4 flex items-center gap-1.5 text-nx-sub hover:text-nx-text text-[13px] font-medium transition-colors nx-btn-anim rounded px-1.5 py-1">
             <span className="w-2 h-2 rounded-full bg-nx-green animate-pulse-slow" />
             eng-prod-cluster
             <ChevronDown size={12} />
@@ -60,7 +60,7 @@ export default function Navbar() {
         <div className="ml-auto flex items-center gap-1.5">
 
           {/* Search */}
-          <button className="nx-btn-ghost text-[13px] hidden lg:flex">
+          <button className="nx-btn-ghost nx-btn-anim text-[13px] hidden lg:flex">
             <Search size={14} strokeWidth={1.8} />
             <span className="text-nx-sub">Search</span>
             <kbd className="ml-1 text-[10px] font-mono bg-nx-muted px-1.5 py-0.5 rounded border border-nx-border text-nx-sub">
@@ -69,7 +69,7 @@ export default function Navbar() {
           </button>
 
           {/* Notifications */}
-          <button className="nx-btn-ghost relative">
+          <button className="nx-btn-ghost nx-btn-anim relative">
             <Bell size={14} strokeWidth={1.8} />
             {notifBadge > 0 && (
               <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-nx-red rounded-full text-[9px] font-bold flex items-center justify-center text-white">
@@ -78,11 +78,26 @@ export default function Navbar() {
             )}
           </button>
 
+          <div className="hidden lg:flex items-center gap-1 border border-nx-border rounded-md px-2 py-1 bg-nx-raised/40">
+            <Palette size={12} strokeWidth={2} className="text-nx-sub" />
+            <select
+              value={theme}
+              onChange={(e) => setTheme(e.target.value)}
+              className="bg-transparent text-[11px] font-mono text-nx-sub outline-none"
+              title="Choose theme"
+            >
+              <option value="midnight">Midnight</option>
+              <option value="aurora">Aurora</option>
+              <option value="sunset">Sunset</option>
+              <option value="paper">Paper</option>
+            </select>
+          </div>
+
           {/* ── Privacy Toggle ───────────────────────────────── */}
           <button
             onClick={togglePrivacy}
             title={isPrivate ? 'Disable privacy mode (Alt+X)' : 'Enable privacy mode (Alt+X)'}
-            className={`nx-btn text-[13px] gap-1.5 transition-all duration-200 ${
+            className={`nx-btn nx-btn-anim text-[13px] gap-1.5 transition-all duration-200 ${
               isPrivate
                 ? 'bg-nx-red/15 text-nx-red border border-nx-red/30 hover:bg-nx-red/25'
                 : 'nx-btn-ghost border border-transparent hover:border-nx-border'
@@ -104,7 +119,7 @@ export default function Navbar() {
 
           {/* Mobile menu */}
           <button
-            className="md:hidden nx-btn-ghost"
+            className="md:hidden nx-btn-ghost nx-btn-anim"
             onClick={() => setMobileOpen(o => !o)}
           >
             {mobileOpen ? <X size={16} /> : <Menu size={16} />}
@@ -118,7 +133,7 @@ export default function Navbar() {
           {NAV_LINKS.map(({ label, icon: Icon, active }) => (
             <button
               key={label}
-              className={`nx-btn-ghost text-sm justify-start ${active ? 'text-nx-text bg-nx-raised' : ''}`}
+              className={`nx-btn-ghost nx-btn-anim text-sm justify-start ${active ? 'text-nx-text bg-nx-raised' : ''}`}
             >
               <Icon size={15} strokeWidth={1.8} />
               {label}

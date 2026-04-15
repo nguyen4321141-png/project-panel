@@ -3,10 +3,10 @@ import { Users, GitCommit, Star } from 'lucide-react';
 const TEAM = [
   { name: 'Sarah Chen',    handle: 'schen',    role: 'Platform Eng',   commits: 47, status: 'online',  avatar: 'SC', hue: '195' },
   { name: 'Ravi Kumar',    handle: 'rkumar',   role: 'Backend Eng',    commits: 38, status: 'online',  avatar: 'RK', hue: '260' },
-  { name: 'Alex Müller',   handle: 'amuller',  role: 'SRE',            commits: 31, status: 'away',    avatar: 'AM', hue: '160' },
-  { name: 'Priya Suresh',  handle: 'psuresh',  role: 'Frontend Eng',   commits: 29, status: 'online',  avatar: 'PS', hue: '330' },
+  { name: 'Adolf Hütter',   handle: '#revived',  role: 'SRE',            commits: 31, status: 'away',    avatar: 'NZ', hue: '160' },
+  { name: 'Tung Tung Tung Sahur',  handle: 'tripleT',  role: 'Frontend Eng',   commits: 29, status: 'online',  avatar: 'T3', hue: '330' },
   { name: 'Yuki Tanaka',   handle: 'ytanaka',  role: 'Security Eng',   commits: 22, status: 'offline', avatar: 'YT', hue: '40'  },
-  { name: 'Lee Jin-woo',   handle: 'ljinwoo',  role: 'Data Eng',       commits: 18, status: 'online',  avatar: 'LJ', hue: '20'  },
+  { name: 'Sung Jin-woo',   handle: 'jinwoodagoat',  role: 'Data Eng',       commits: 18, status: 'online',  avatar: 'BJ', hue: '20'  },
 ];
 
 const STATUS_COLORS = {

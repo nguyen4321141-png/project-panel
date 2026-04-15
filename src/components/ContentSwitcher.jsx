@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize2, ExternalLink } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, ExternalLink, Globe } from 'lucide-react';
 import { usePrivacy } from '../context/PrivacyContext.jsx';
 
 // Lazy-load ReactPlayer to avoid SSR issues and reduce initial bundle
@@ -24,7 +24,18 @@ function PlayerPlaceholder({ onLoad }) {
 }
 
 export default function ContentSwitcher() {
-  const { mediaUrl, isMuted, setIsMuted, isPlaying, setIsPlaying, playerRef } = usePrivacy();
+  const {
+    mediaUrl,
+    browserUrl,
+    contentMode,
+    isMuted,
+    setIsMuted,
+    isPlaying,
+    setIsPlaying,
+    playbackTime,
+    setPlaybackTime,
+    playerRef,
+  } = usePrivacy();
   const [playerReady, setPlayerReady] = useState(false);
   const [playerLoaded, setPlayerLoaded] = useState(false);
   const [duration, setDuration]         = useState(0);
@@ -36,7 +47,8 @@ export default function ContentSwitcher() {
     if (internalRef.current) playerRef.current = internalRef.current;
   });
 
-  const hasUrl = Boolean(mediaUrl?.trim());
+  const hasMediaUrl = Boolean(mediaUrl?.trim());
+  const hasBrowserUrl = Boolean(browserUrl?.trim());
 
   const formatTime = (s) => {
     const m = Math.floor(s / 60);
@@ -44,103 +56,173 @@ export default function ContentSwitcher() {
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
-  if (!hasUrl) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[180px] gap-3 text-center px-4">
-        <div className="w-10 h-10 rounded-xl bg-nx-raised border border-nx-border flex items-center justify-center">
-          <Play size={18} strokeWidth={1.5} className="text-nx-sub ml-0.5" />
-        </div>
-        <div>
-          <p className="text-[12px] font-medium text-nx-text">No stream configured</p>
-          <p className="text-[11px] text-nx-sub mt-0.5">
-            Open settings to add a source URL
-          </p>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (contentMode === 'media') setProgress(playbackTime || 0);
+  }, [contentMode, playbackTime]);
+
+  const handleSeek = (value) => {
+    const next = Number(value);
+    if (!Number.isFinite(next)) return;
+    setProgress(next);
+    setPlaybackTime(next);
+    if (playerRef.current && typeof playerRef.current.seekTo === 'function') {
+      playerRef.current.seekTo(next, 'seconds');
+    }
+  };
 
   return (
-    <div className="flex flex-col">
-      {/* Player area */}
-      <div className="react-player-wrapper bg-black rounded-t-none">
-        {!playerLoaded && <PlayerPlaceholder onLoad={() => setPlayerLoaded(true)} />}
-        {playerLoaded && ReactPlayer && (
-          <ReactPlayer
-            ref={internalRef}
-            url={mediaUrl}
-            playing={isPlaying}
-            muted={isMuted}
-            volume={isMuted ? 0 : 0.8}
-            width="100%"
-            height="100%"
-            onReady={() => setPlayerReady(true)}
-            onDuration={setDuration}
-            onProgress={({ playedSeconds }) => setProgress(playedSeconds)}
-            onEnded={() => setIsPlaying(false)}
-            config={{
-              youtube: {
-                playerVars: {
-                  modestbranding: 1,
-                  rel: 0,
-                  iv_load_policy: 3,
-                },
-              },
-            }}
-          />
+    <div>
+      <div className={contentMode === 'media' ? 'flex flex-col' : 'hidden'} aria-hidden={contentMode !== 'media'}>
+        {!hasMediaUrl ? (
+          <div className="flex flex-col items-center justify-center h-full min-h-[180px] gap-3 text-center px-4">
+            <div className="w-10 h-10 rounded-xl bg-nx-raised border border-nx-border flex items-center justify-center">
+              <Play size={18} strokeWidth={1.5} className="text-nx-sub ml-0.5" />
+            </div>
+            <div>
+              <p className="text-[12px] font-medium text-nx-text">No stream configured</p>
+              <p className="text-[11px] text-nx-sub mt-0.5">
+                Open settings to add a source URL
+              </p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="react-player-wrapper bg-black rounded-t-none">
+              {!playerLoaded && <PlayerPlaceholder onLoad={() => setPlayerLoaded(true)} />}
+              {playerLoaded && ReactPlayer && (
+                <ReactPlayer
+                  ref={internalRef}
+                  url={mediaUrl}
+                  playing={isPlaying}
+                  muted={isMuted}
+                  volume={isMuted ? 0 : 0.8}
+                  width="100%"
+                  height="100%"
+                  onReady={() => {
+                    setPlayerReady(true);
+                    if (playbackTime > 0 && internalRef.current?.seekTo) {
+                      internalRef.current.seekTo(playbackTime, 'seconds');
+                    }
+                  }}
+                  onDuration={setDuration}
+                  onProgress={({ playedSeconds }) => {
+                    setProgress(playedSeconds);
+                    setPlaybackTime(playedSeconds);
+                  }}
+                  onEnded={() => setIsPlaying(false)}
+                  config={{
+                    youtube: {
+                      playerVars: {
+                        modestbranding: 1,
+                        rel: 0,
+                        iv_load_policy: 3,
+                      },
+                    },
+                  }}
+                />
+              )}
+            </div>
+
+            <div className="bg-nx-raised border-t border-nx-border px-3 py-2 flex items-center gap-2">
+              <button
+                onClick={() => setIsPlaying(p => !p)}
+                disabled={!playerReady}
+                className="nx-btn-ghost nx-btn-anim p-1.5 disabled:opacity-30"
+              >
+                {isPlaying
+                  ? <Pause  size={13} strokeWidth={2} />
+                  : <Play   size={13} strokeWidth={2} className="ml-0.5" />
+                }
+              </button>
+
+              <div className="flex-1 flex items-center gap-2">
+                <input
+                  type="range"
+                  min={0}
+                  max={Math.max(duration, 0)}
+                  step={0.1}
+                  value={Math.min(progress, duration || progress)}
+                  onChange={(e) => handleSeek(e.target.value)}
+                  disabled={!playerReady || duration <= 0}
+                  className="nx-range flex-1"
+                  aria-label="Playback timeline"
+                />
+                {duration > 0 && (
+                  <span className="text-[10px] font-mono text-nx-sub shrink-0">
+                    {formatTime(progress)}/{formatTime(duration)}
+                  </span>
+                )}
+              </div>
+
+              <button
+                onClick={() => setIsMuted(m => !m)}
+                className="nx-btn-ghost nx-btn-anim p-1.5"
+              >
+                {isMuted
+                  ? <VolumeX size={13} strokeWidth={2} className="text-nx-red" />
+                  : <Volume2 size={13} strokeWidth={2} />
+                }
+              </button>
+
+              <a
+                href={mediaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="nx-btn-ghost nx-btn-anim p-1.5"
+                title="Open source in new tab"
+              >
+                <ExternalLink size={11} strokeWidth={2} />
+              </a>
+            </div>
+          </>
         )}
       </div>
 
-      {/* Controls */}
-      <div className="bg-nx-raised border-t border-nx-border px-3 py-2 flex items-center gap-2">
-        {/* Play / Pause */}
-        <button
-          onClick={() => setIsPlaying(p => !p)}
-          disabled={!playerReady}
-          className="nx-btn-ghost p-1.5 disabled:opacity-30"
-        >
-          {isPlaying
-            ? <Pause  size={13} strokeWidth={2} />
-            : <Play   size={13} strokeWidth={2} className="ml-0.5" />
-          }
-        </button>
-
-        {/* Progress */}
-        <div className="flex-1 flex items-center gap-2">
-          <div className="flex-1 h-1 bg-nx-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-nx-sky rounded-full transition-all duration-1000"
-              style={{ width: duration ? `${(progress / duration) * 100}%` : '0%' }}
-            />
+      <div className={contentMode === 'browser' ? 'flex flex-col' : 'hidden'} aria-hidden={contentMode !== 'browser'}>
+        {!hasBrowserUrl ? (
+          <div className="flex flex-col items-center justify-center h-full min-h-[180px] gap-3 text-center px-4">
+            <div className="w-10 h-10 rounded-xl bg-nx-raised border border-nx-border flex items-center justify-center">
+              <Globe size={18} strokeWidth={1.5} className="text-nx-sub" />
+            </div>
+            <div>
+              <p className="text-[12px] font-medium text-nx-text">No browser URL configured</p>
+              <p className="text-[11px] text-nx-sub mt-0.5">
+                Open settings to add a browser URL
+              </p>
+            </div>
           </div>
-          {duration > 0 && (
-            <span className="text-[10px] font-mono text-nx-sub shrink-0">
-              {formatTime(progress)}/{formatTime(duration)}
-            </span>
-          )}
-        </div>
-
-        {/* Mute */}
-        <button
-          onClick={() => setIsMuted(m => !m)}
-          className="nx-btn-ghost p-1.5"
-        >
-          {isMuted
-            ? <VolumeX size={13} strokeWidth={2} className="text-nx-red" />
-            : <Volume2 size={13} strokeWidth={2} />
-          }
-        </button>
-
-        {/* Open in new tab */}
-        <a
-          href={mediaUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="nx-btn-ghost p-1.5"
-          title="Open source in new tab"
-        >
-          <ExternalLink size={11} strokeWidth={2} />
-        </a>
+        ) : (
+          <>
+            <div className="h-[260px] bg-nx-bg border-b border-nx-border">
+              <iframe
+                src={browserUrl}
+                title="Embedded browser"
+                className="w-full h-full border-0"
+                referrerPolicy="no-referrer"
+                sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
+              />
+            </div>
+            <div className="bg-nx-raised border-t border-nx-border px-3 py-2 flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <span className="text-[10px] font-mono text-nx-sub truncate block">
+                  Browser Mode: {browserUrl}
+                </span>
+                <span className="text-[10px] font-mono text-nx-border block">
+                  Some sites block iframe login/embed (403/CSRF). Use open-in-new-tab.
+                </span>
+              </div>
+              <a
+                href={browserUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="nx-btn-ghost nx-btn-anim p-1.5"
+                title="Open browser URL in new tab"
+              >
+                <ExternalLink size={11} strokeWidth={2} />
+              </a>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

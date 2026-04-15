@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, Link2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, Link2, CheckCircle2, AlertCircle, History } from 'lucide-react';
 import { usePrivacy } from '../context/PrivacyContext.jsx';
 
 const PLACEHOLDER_URLS = [
@@ -14,8 +14,16 @@ function isValidUrl(str) {
 }
 
 export default function ConfigDrawer({ isOpen, onClose }) {
-  const { mediaUrl, setMediaUrl } = usePrivacy();
+  const {
+    mediaUrl,
+    setMediaUrl,
+    browserUrl,
+    setBrowserUrl,
+    sourceHistory,
+    addSourceToHistory,
+  } = usePrivacy();
   const [draft, setDraft]         = useState(mediaUrl);
+  const [browserDraft, setBrowserDraft] = useState(browserUrl);
   const [saved, setSaved]         = useState(false);
   const inputRef                  = useRef(null);
 
@@ -23,14 +31,22 @@ export default function ConfigDrawer({ isOpen, onClose }) {
   useEffect(() => {
     if (isOpen) {
       setDraft(mediaUrl);
+      setBrowserDraft(browserUrl);
       setSaved(false);
       setTimeout(() => inputRef.current?.focus(), 80);
     }
-  }, [isOpen, mediaUrl]);
+  }, [isOpen, mediaUrl, browserUrl]);
 
   const handleSave = () => {
-    if (!draft.trim()) return;
-    setMediaUrl(draft.trim());
+    if (!validMedia || !validBrowser) return;
+    if (draft.trim()) {
+      setMediaUrl(draft.trim());
+      addSourceToHistory('media', draft.trim());
+    }
+    if (browserDraft.trim() && isValidUrl(browserDraft.trim())) {
+      setBrowserUrl(browserDraft.trim());
+      addSourceToHistory('browser', browserDraft.trim());
+    }
     setSaved(true);
     setTimeout(() => { setSaved(false); onClose(); }, 900);
   };
@@ -40,7 +56,8 @@ export default function ConfigDrawer({ isOpen, onClose }) {
     if (e.key === 'Escape') onClose();
   };
 
-  const valid = draft.trim() === '' || isValidUrl(draft.trim());
+  const validMedia = draft.trim() === '' || isValidUrl(draft.trim());
+  const validBrowser = browserDraft.trim() === '' || isValidUrl(browserDraft.trim());
 
   if (!isOpen) return null;
 
@@ -86,23 +103,104 @@ export default function ConfigDrawer({ isOpen, onClose }) {
                 className={`w-full bg-nx-raised border rounded-md px-3 py-2 text-[12px] font-mono
                             text-nx-text placeholder:text-nx-border outline-none transition-all
                             focus:ring-1 ${
-                              !valid
+                              !validMedia
                                 ? 'border-nx-red/50 focus:ring-nx-red/30'
                                 : 'border-nx-border focus:border-nx-sky focus:ring-nx-sky/20'
                             }`}
               />
               {draft && (
                 <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
-                  {valid
+                  {validMedia
                     ? <CheckCircle2 size={12} className="text-nx-green" />
                     : <AlertCircle  size={12} className="text-nx-red" />
                   }
                 </div>
               )}
             </div>
-            {!valid && (
+            {!validMedia && (
               <p className="text-[11px] text-nx-red font-mono">
                 Invalid URL format
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <p className="flex items-center gap-1.5 text-[11px] font-mono text-nx-sub uppercase tracking-widest">
+              <History size={10} strokeWidth={2} />
+              Recent Sources
+            </p>
+
+            <div className="space-y-2">
+              <p className="text-[10px] font-mono text-nx-border uppercase">Media</p>
+              <div className="space-y-1">
+                {(sourceHistory.media || []).length === 0 && (
+                  <p className="text-[11px] text-nx-border">No media history yet.</p>
+                )}
+                {(sourceHistory.media || []).map((item) => (
+                  <button
+                    key={`media-${item}`}
+                    onClick={() => setDraft(item)}
+                    className="w-full text-left px-2 py-1.5 rounded border border-nx-border text-[11px] text-nx-sub hover:text-nx-text hover:bg-nx-raised transition-colors truncate"
+                    title={item}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-[10px] font-mono text-nx-border uppercase">Browser</p>
+              <div className="space-y-1">
+                {(sourceHistory.browser || []).length === 0 && (
+                  <p className="text-[11px] text-nx-border">No browser history yet.</p>
+                )}
+                {(sourceHistory.browser || []).map((item) => (
+                  <button
+                    key={`browser-${item}`}
+                    onClick={() => setBrowserDraft(item)}
+                    className="w-full text-left px-2 py-1.5 rounded border border-nx-border text-[11px] text-nx-sub hover:text-nx-text hover:bg-nx-raised transition-colors truncate"
+                    title={item}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="flex items-center gap-1.5 text-[11px] font-mono text-nx-sub uppercase tracking-widest">
+              <Link2 size={10} strokeWidth={2} />
+              Browser URL
+            </label>
+            <div className="relative">
+              <input
+                type="url"
+                value={browserDraft}
+                onChange={e => { setBrowserDraft(e.target.value); setSaved(false); }}
+                onKeyDown={handleKey}
+                placeholder="https://example.com"
+                className={`w-full bg-nx-raised border rounded-md px-3 py-2 text-[12px] font-mono
+                            text-nx-text placeholder:text-nx-border outline-none transition-all
+                            focus:ring-1 ${
+                              !validBrowser
+                                ? 'border-nx-red/50 focus:ring-nx-red/30'
+                                : 'border-nx-border focus:border-nx-sky focus:ring-nx-sky/20'
+                            }`}
+              />
+              {browserDraft && (
+                <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                  {validBrowser
+                    ? <CheckCircle2 size={12} className="text-nx-green" />
+                    : <AlertCircle  size={12} className="text-nx-red" />
+                  }
+                </div>
+              )}
+            </div>
+            {!validBrowser && (
+              <p className="text-[11px] text-nx-red font-mono">
+                Invalid browser URL format
               </p>
             )}
           </div>
@@ -147,14 +245,14 @@ export default function ConfigDrawer({ isOpen, onClose }) {
         <div className="px-5 py-4 border-t border-nx-border flex gap-2">
           <button
             onClick={onClose}
-            className="flex-1 nx-btn border border-nx-border text-nx-sub hover:text-nx-text hover:bg-nx-raised justify-center text-[12px]"
+            className="flex-1 nx-btn nx-btn-anim border border-nx-border text-nx-sub hover:text-nx-text hover:bg-nx-raised justify-center text-[12px]"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            disabled={!valid || !draft.trim()}
-            className={`flex-1 nx-btn justify-center text-[12px] transition-all duration-200 ${
+            disabled={!validMedia || !validBrowser || (!draft.trim() && !browserDraft.trim())}
+            className={`flex-1 nx-btn nx-btn-anim justify-center text-[12px] transition-all duration-200 ${
               saved
                 ? 'bg-nx-green/20 text-nx-green border border-nx-green/30'
                 : 'nx-btn-accent disabled:opacity-40 disabled:cursor-not-allowed'

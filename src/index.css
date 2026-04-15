@@ -2,14 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
+:root,
+[data-theme='midnight'] {
+  --nx-bg: #090b10;
+  --nx-surface: #0f1219;
+  --nx-raised: #141824;
+  --nx-border: #1c2133;
+  --nx-muted: #232b3e;
+  --nx-text: #cdd9f0;
+  --nx-sub: #5c6b8a;
+  --nx-sky: #38bdf8;
+  --nx-sky-dim: rgba(56, 189, 248, 0.12);
+  --nx-green: #34d399;
+  --nx-amber: #fbbf24;
+  --nx-red: #f87171;
+  --nx-purple: #a78bfa;
+}
+
+[data-theme='aurora'] {
+  --nx-bg: #071018;
+  --nx-surface: #0d1620;
+  --nx-raised: #132230;
+  --nx-border: #1b3347;
+  --nx-muted: #27445e;
+  --nx-text: #d9f5ff;
+  --nx-sub: #77a8bf;
+  --nx-sky: #22d3ee;
+  --nx-sky-dim: rgba(34, 211, 238, 0.15);
+  --nx-green: #2dd4bf;
+  --nx-amber: #facc15;
+  --nx-red: #fb7185;
+  --nx-purple: #8b5cf6;
+}
+
+[data-theme='sunset'] {
+  --nx-bg: #170f12;
+  --nx-surface: #21151a;
+  --nx-raised: #2b1b22;
+  --nx-border: #3b2530;
+  --nx-muted: #513341;
+  --nx-text: #ffe4ec;
+  --nx-sub: #c896a7;
+  --nx-sky: #f472b6;
+  --nx-sky-dim: rgba(244, 114, 182, 0.15);
+  --nx-green: #4ade80;
+  --nx-amber: #fbbf24;
+  --nx-red: #fb7185;
+  --nx-purple: #c084fc;
+}
+
+[data-theme='paper'] {
+  --nx-bg: #f4f7fb;
+  --nx-surface: #ffffff;
+  --nx-raised: #eef3f9;
+  --nx-border: #d8e2ef;
+  --nx-muted: #c9d6e6;
+  --nx-text: #122033;
+  --nx-sub: #5b6f8c;
+  --nx-sky: #2563eb;
+  --nx-sky-dim: rgba(37, 99, 235, 0.12);
+  --nx-green: #0f9f74;
+  --nx-amber: #b7791f;
+  --nx-red: #dc2626;
+  --nx-purple: #7c3aed;
+}
+
 @layer base {
   *, *::before, *::after {
     box-sizing: border-box;
   }
 
-  html {
-    color-scheme: dark;
-  }
+  html { color-scheme: dark; }
 
   body {
     @apply bg-nx-bg font-sans text-nx-text antialiased;
@@ -59,6 +122,42 @@
   .privacy-transition {
     @apply transition-all duration-200 ease-in-out;
   }
+}
+
+.nx-btn-anim {
+  transition: transform 120ms ease, box-shadow 180ms ease, background-color 180ms ease, color 180ms ease;
+}
+
+.nx-btn-anim:hover {
+  transform: translateY(-1px);
+}
+
+.nx-btn-anim:active {
+  transform: scale(0.97);
+}
+
+.nx-range {
+  appearance: none;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--nx-muted);
+}
+
+.nx-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 9999px;
+  background: var(--nx-sky);
+  border: 2px solid var(--nx-surface);
+}
+
+.nx-range::-moz-range-thumb {
+  width: 11px;
+  height: 11px;
+  border-radius: 9999px;
+  background: var(--nx-sky);
+  border: 2px solid var(--nx-surface);
 }
 
 /* React Player wrapper */
